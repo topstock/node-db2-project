@@ -11,11 +11,14 @@ const Car = require('./cars-model')
 const checkCarId = async (req, res, next) => {
   // if the if the id in `req.params` does not exist in the database.
   const car = await Car.getById(req.params.id)
-  if( !car ){
-  const error = { status: 404, message: `car with id ${req.params.id} is not found` }
-
-  next(error)
+    if( !car ){
+      const error = { 
+        status: 404, 
+        message: `car with id ${req.params.id} is not found` 
+      }
+    next(error)
   } else {
+    req.car = car
     next()
   }
 }
@@ -30,4 +33,11 @@ const checkVinNumberValid = (req, res, next) => {
 
 const checkVinNumberUnique = (req, res, next) => {
   // DO YOUR MAGIC
+}
+
+module.exports = {
+  checkCarId,
+  checkCarPayload,
+  checkVinNumberValid,
+  checkVinNumberUnique
 }

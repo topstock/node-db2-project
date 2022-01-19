@@ -2,7 +2,7 @@
 const res = require('express/lib/response');
 const Cars = require('./cars-model')
 const router = require('express').Router();
-
+const md = require('./cars-middleware')
 router.get('/', async (req, res, next) => {
     await Cars.getAll()
     .then(cars => {
@@ -13,14 +13,8 @@ router.get('/', async (req, res, next) => {
     })
 })
 
-router.get('/', async (req, res, next) => {
-    await Cars.getById(req.params.id)
-    .then(car => {
-        res.json(car)
-    })
-    .catch(err => {
-        next(err)
-    })
+router.get('/:id', md.checkCarId,async (req, res, next) => {
+  res.json(req.car)
 })
 
 module.exports = router
