@@ -13,13 +13,11 @@ const Cars = require('./cars-model')
 const checkCarId = async (req, res, next) => {
   // if the if the id in `req.params` does not exist in the database.
   const car = await Cars.getById(req.params.id)
-    if( !car ){
-      const error = { 
-        status: 404, 
+    if( car === undefined ) {
+          res.status(404).json({ 
         message: `car with id ${req.params.id} is not found` 
-      }
-    next(error)
-  } else {
+      })
+    } else {
     req.car = car
     next()
   }
@@ -33,27 +31,33 @@ const checkCarPayload = (req, res, next) => {
     mileage,
     make
   } = req.body;
-  const required = [
-    vin,
-    model,
-    mileage,
-    make
-  ]
-  required.forEach( requirement => {
-    if (requirement === undefined) {
-      res.status(400).json({
-        message: `${requirement} is missing`
-      })
-    } 
-  }) 
-  next()
+
+  if (vin === undefined) {
+    res.status(400).json({
+      message: 'vin is missing'
+    })
+  } else if (model === undefined) {
+    res.status(400).json({
+      message: 'model is missing'
+    })
+  } else if (make === undefined) {
+    res.status(400).json({
+      message: 'make is missing'
+    })
+  } else if (mileage === undefined) {
+    res.status(400).json({
+      message: 'mileage is missing'
+    })
+  } else {
+    next()
+  }
 }
 
 const checkVinNumberValid = (req, res, next) => {
   // DO YOUR MAGIC
   const isValidVin = vinValidator.validate(req.body.vin)
   if (!isValidVin) {
-    req.status(400).json({ 
+    res.status(400).json({ 
       message: `vin ${req.body.vin} is invalid`
     });
   } else {
@@ -61,18 +65,18 @@ const checkVinNumberValid = (req, res, next) => {
   } 
 }
 
-const checkVinNumberUnique = (req, res, next) => {
-  const isUniqueVin = Cars.getAll().filter( car => {
-    return car.vin === req.body.vin
+const checkVinNumberUnique = async (req, res, next) => {
+  const allCars = await Cars.getAll()
+  const matches = allCars.filter( car => {
+    return Number(car.vin) === Number(req.body.vin)
   }).length
+ 
+  const isMatchless = !matches
+  isMatchless?next():res.status(400).json({
+    message: `vin ${req.body.vin} already exists`
+  })
 
-  if (!isUniqueVin) {
-    res.status(400).json({ 
-      message: `vin ${req.body.vin} already exists`
-    })
-  } else {
-    next()
-  }
+ next()
 }
 
 module.exports = {

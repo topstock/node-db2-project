@@ -1,4 +1,3 @@
-const req = require('express/lib/request')
 const db = require('../../data/db-config')
 
 const getAll = () => {
@@ -15,9 +14,12 @@ const getById = (id) => {
 
 const create = async (car) => {
   // DO YOUR MAGIC
-  const [car_id] = await db('cars')
-    .insert(car)
-  return getById(car_id)
+  await db('cars').insert(car)
+  
+  const newCar = db('cars')
+    .where('vin', car.vin)
+    .first();
+  return getById(newCar)
 }
 
 module.exports = {
